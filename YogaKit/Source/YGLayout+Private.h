@@ -12,6 +12,4 @@
 
 @property (nonatomic, assign, readonly) YGNodeRef node;
 
-- (instancetype)initWithView:(UIView *)view;
-
 @end

@@ -17,7 +17,7 @@ static const void *kYGYogaAssociatedKey = &kYGYogaAssociatedKey;
 {
   YGLayout *yoga = objc_getAssociatedObject(self, kYGYogaAssociatedKey);
   if (!yoga) {
-    yoga = [[YGLayout alloc] initWithView:self];
+    yoga = [[YGLayout alloc] initWithLayoutNode:self];
     objc_setAssociatedObject(self, kYGYogaAssociatedKey, yoga, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
   }
 
@@ -34,6 +34,18 @@ static const void *kYGYogaAssociatedKey = &kYGYogaAssociatedKey;
   if (block != nil) {
     block(self.yoga);
   }
+}
+
+- (void)safeSetFrame:(CGRect)frame
+{
+  NSCAssert([NSThread isMainThread], @"Framesetting should only be done on the main thread.");
+  [self setFrame:frame];
+}
+
+- (NSArray<id<YGLayoutNode>> *)subnodes
+{
+  NSAssert([NSThread isMainThread], @"This method must be called on the main thread.");
+  return self.subviews;
 }
 
 @end

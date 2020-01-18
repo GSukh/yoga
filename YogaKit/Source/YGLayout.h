@@ -24,6 +24,23 @@ typedef NS_OPTIONS(NSInteger, YGDimensionFlexibility) {
   YGDimensionFlexibilityFlexibleHeight = 1 << 1,
 };
 
+
+@class YGLayout;
+
+@protocol YGLayoutNode
+
+@property (nonatomic, readonly, strong) YGLayout *yoga;
+@property (nonatomic, readonly, copy) NSArray<id<YGLayoutNode>> *subnodes;
+
+@property (nonatomic, readonly, assign) CGRect frame;
+@property (nonatomic, readonly, assign) CGRect bounds;
+
+- (void)safeSetFrame:(CGRect)frame;
+- (CGSize)sizeThatFits:(CGSize)size;
+
+@end
+
+
 @interface YGLayout : NSObject
 
 /**
@@ -39,6 +56,11 @@ typedef NS_OPTIONS(NSInteger, YGDimensionFlexibility) {
  */
 + (instancetype)new
     __attribute__((unavailable("you are not meant to initialise YGLayout")));
+
+/**
+  Returns a new layout managing the entity passed (weakly referenced)
+ */
+- (instancetype)initWithLayoutNode:(id<YGLayoutNode>)layoutNode NS_DESIGNATED_INITIALIZER;
 
 /**
   The property that decides if we should include this view when calculating
