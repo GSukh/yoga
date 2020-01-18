@@ -195,8 +195,8 @@ static YGConfigRef globalConfig;
 - (BOOL)isLeaf
 {
   if (self.isEnabled) {
-    for (id<YGLayoutNode> subview in self.layoutNode.subnodes) {
-      YGLayout *const yoga = subview.yoga;
+    for (id<YGLayoutNode> subnode in self.layoutNode.subnodes) {
+      YGLayout *const yoga = subnode.yoga;
       if (yoga.isEnabled && yoga.isIncludedInLayout) {
         return NO;
       }
@@ -331,7 +331,7 @@ static YGSize YGMeasureView(
   const CGFloat constrainedWidth = (widthMode == YGMeasureModeUndefined) ? CGFLOAT_MAX : width;
   const CGFloat constrainedHeight = (heightMode == YGMeasureModeUndefined) ? CGFLOAT_MAX: height;
 
-  id<YGLayoutNode> entity = (__bridge id<YGLayoutNode>) YGNodeGetContext(node);
+  id<YGLayoutNode> layoutNode = (__bridge id<YGLayoutNode>) YGNodeGetContext(node);
   CGSize sizeThatFits = CGSizeZero;
 
   // The default implementation of sizeThatFits: returns the existing size of
@@ -340,8 +340,8 @@ static YGSize YGMeasureView(
   // UIKit returns the existing size.
   //
   // See https://github.com/facebook/yoga/issues/606 for more information.
-  if (!view.yoga.isUIView || [node.subnodes count] > 0) {
-      sizeThatFits = [entity sizeThatFits:(CGSize) {
+  if (!layoutNode.yoga.isUIView || [layoutNode.subnodes count] > 0) {
+      sizeThatFits = [layoutNode sizeThatFits:(CGSize) {
         .width = constrainedWidth,
         .height = constrainedHeight,
       }];
@@ -385,9 +385,9 @@ static BOOL YGNodeHasExactSameChildren(const YGNodeRef node, NSArray<id<YGLayout
   return YES;
 }
 
-static void YGAttachNodesFromViewHierachy(id<YGLayoutNode> const view)
+static void YGAttachNodesFromViewHierachy(id<YGLayoutNode> const layoutNode)
 {
-  YGLayout *const yoga = view.yoga;
+  YGLayout *const yoga = layoutNode.yoga;
   const YGNodeRef node = yoga.node;
 
   // Only leaf nodes should have a measure function
@@ -397,22 +397,22 @@ static void YGAttachNodesFromViewHierachy(id<YGLayoutNode> const view)
   } else {
     YGNodeSetMeasureFunc(node, NULL);
 
-    NSMutableArray<id<YGLayoutNode>> *subnodesToInclude = [[NSMutableArray alloc] initWithCapacity:view.subnodes.count];
-    for (id<YGLayoutNode> subview in view.subnodes) {
-      if (subview.yoga.isEnabled && subview.yoga.isIncludedInLayout) {
-        [subviewsToInclude addObject:subview];
+    NSMutableArray<id<YGLayoutNode>> *subnodesToInclude = [[NSMutableArray alloc] initWithCapacity:layoutNode.subnodes.count];
+    for (id<YGLayoutNode> subnode in layoutNode.subnodes) {
+      if (subnode.yoga.isEnabled && subnode.yoga.isIncludedInLayout) {
+        [subnodesToInclude addObject:subnode];
       }
     }
 
-    if (!YGNodeHasExactSameChildren(node, subviewsToInclude)) {
+    if (!YGNodeHasExactSameChildren(node, subnodesToInclude)) {
       YGRemoveAllChildren(node);
-      for (int i=0; i<subviewsToInclude.count; i++) {
-        YGNodeInsertChild(node, subviewsToInclude[i].yoga.node, i);
+      for (int i=0; i<subnodesToInclude.count; i++) {
+        YGNodeInsertChild(node, subnodesToInclude[i].yoga.node, i);
       }
     }
 
-    for (UIView *const subview in subviewsToInclude) {
-      YGAttachNodesFromViewHierachy(subview);
+    for (id<YGLayoutNode> const subnode in subnodesToInclude) {
+      YGAttachNodesFromViewHierachy(subnode);
     }
   }
 }
@@ -437,9 +437,9 @@ static CGFloat YGRoundPixelValue(CGFloat value)
   return roundf(value * scale) / scale;
 }
 
-static void YGApplyLayoutToViewHierarchy(id<YGLayoutNode> view, BOOL preserveOrigin)
+static void YGApplyLayoutToViewHierarchy(id<YGLayoutNode> layoutNode, BOOL preserveOrigin)
 {
-  const YGLayout *yoga = view.yoga;
+  const YGLayout *yoga = layoutNode.yoga;
 
   if (!yoga.isIncludedInLayout) {
      return;
@@ -456,8 +456,8 @@ static void YGApplyLayoutToViewHierarchy(id<YGLayoutNode> view, BOOL preserveOri
     topLeft.y + YGNodeLayoutGetHeight(node),
   };
 
-  const CGPoint origin = preserveOrigin ? view.frame.origin : CGPointZero;
-  [view safeSetFrame:(CGRect) {
+  const CGPoint origin = preserveOrigin ? layoutNode.frame.origin : CGPointZero;
+  [layoutNode safeSetFrame:(CGRect) {
     .origin = {
       .x = YGRoundPixelValue(topLeft.x + origin.x),
       .y = YGRoundPixelValue(topLeft.y + origin.y),
@@ -469,8 +469,8 @@ static void YGApplyLayoutToViewHierarchy(id<YGLayoutNode> view, BOOL preserveOri
   }];
 
   if (!yoga.isLeaf) {
-    for (NSUInteger i=0; i<view.subviews.count; i++) {
-      YGApplyLayoutToViewHierarchy(view.subviews[i], NO);
+    for (NSUInteger i=0; i<layoutNode.subnodes.count; i++) {
+      YGApplyLayoutToViewHierarchy(layoutNode.subnodes[i], NO);
     }
   }
 }
