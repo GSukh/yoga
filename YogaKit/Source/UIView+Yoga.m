@@ -11,6 +11,9 @@
 
 static const void *kYGYogaAssociatedKey = &kYGYogaAssociatedKey;
 
+@interface UIView (YogaKit) <YGLayoutNode>
+@end
+
 @implementation UIView (YogaKit)
 
 - (YGLayout *)yoga
