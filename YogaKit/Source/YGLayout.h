@@ -35,6 +35,8 @@ typedef NS_OPTIONS(NSInteger, YGDimensionFlexibility) {
 @property (nonatomic, readonly, assign) CGRect frame;
 @property (nonatomic, readonly, assign) CGRect bounds;
 
+@property (nonatomic, readonly, assign) BOOL isUIView;
+
 - (void)safeSetFrame:(CGRect)frame;
 - (CGSize)sizeThatFits:(CGSize)size;
 

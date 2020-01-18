@@ -48,4 +48,9 @@ static const void *kYGYogaAssociatedKey = &kYGYogaAssociatedKey;
   return self.subviews;
 }
 
+- (BOOL)isUIView
+{
+  return [self isMemberOfClass:[UIView class]];
+}
+
 @end

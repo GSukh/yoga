@@ -154,7 +154,7 @@ static YGConfigRef globalConfig;
     YGNodeSetContext(_node, (__bridge void *) layoutNode);
     _isEnabled = NO;
     _isIncludedInLayout = YES;
-    _isUIView = [layoutNode isMemberOfClass:[UIView class]];
+    _isUIView = [layoutNode isUIView];
   }
 
   return self;
